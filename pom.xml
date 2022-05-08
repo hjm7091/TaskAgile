@@ -227,7 +227,7 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
-								<argument>test:integration</argument>
+								<argument>test:e2e</argument>
 							</arguments>
 						</configuration>
 					</execution>

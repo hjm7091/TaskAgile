@@ -5,7 +5,7 @@ import com.taskagile.domain.model.cardlist.CardListPosition;
 
 import java.util.List;
 
-public class ChangeCardListPositionsCommand {
+public class ChangeCardListPositionsCommand extends UserCommand {
 
     private final BoardId boardId;
     private final List<CardListPosition> cardListPositions;

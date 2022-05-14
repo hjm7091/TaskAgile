@@ -3,14 +3,14 @@ package com.taskagile.web.apis;
 import com.taskagile.domain.application.BoardService;
 import com.taskagile.domain.application.CardListService;
 import com.taskagile.domain.application.TeamService;
-import com.taskagile.domain.application.utils.CardService;
-import com.taskagile.domain.common.security.CurrentUser;
+import com.taskagile.domain.application.commands.AddBoardMemberCommand;
+import com.taskagile.domain.application.commands.CreateBoardCommand;
+import com.taskagile.domain.application.CardService;
 import com.taskagile.domain.model.board.Board;
 import com.taskagile.domain.model.board.BoardId;
 import com.taskagile.domain.model.card.Card;
 import com.taskagile.domain.model.cardlist.CardList;
 import com.taskagile.domain.model.team.Team;
-import com.taskagile.domain.model.user.SimpleUser;
 import com.taskagile.domain.model.user.User;
 import com.taskagile.domain.model.user.UserNotFoundException;
 import com.taskagile.web.payload.AddBoardMemberPayload;
@@ -26,10 +26,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Controller
-public class BoardApiController {
+public class BoardApiController extends AbstractBaseController {
 
     private final BoardService boardService;
     private final TeamService teamService;
@@ -48,8 +49,10 @@ public class BoardApiController {
 
     @PostMapping("/api/boards")
     public ResponseEntity<ApiResult> createBoard(@RequestBody CreateBoardPayload payload,
-                                                 @CurrentUser SimpleUser currentUser) {
-        Board board = boardService.createBoard(payload.toCommand(currentUser.getUserId()));
+                                                 HttpServletRequest request) {
+        CreateBoardCommand command = payload.toCommand();
+        addTriggeredBy(command, request);
+        Board board = boardService.createBoard(command);
         return CreateBoardResult.build(board);
     }
 
@@ -69,15 +72,14 @@ public class BoardApiController {
 
         List<CardList> cardLists = cardListService.findByBoardId(boardId);
         List<Card> cards = cardService.findByBoardId(boardId);
-        System.out.println("cardLists size : " + cardLists.size());
-        System.out.println("cards size : " + cards.size());
 
         return BoardResult.build(team, board, members, cardLists, cards);
     }
 
     @PostMapping("/api/boards/{boardId}/members")
     public ResponseEntity<ApiResult> addMember(@PathVariable("boardId") long rawBoardId,
-                                               @RequestBody AddBoardMemberPayload payload) {
+                                               @RequestBody AddBoardMemberPayload payload,
+                                               HttpServletRequest request) {
         BoardId boardId = new BoardId(rawBoardId);
         Board board = boardService.findById(boardId);
         if (board == null) {
@@ -85,7 +87,9 @@ public class BoardApiController {
         }
 
         try {
-            User member = boardService.addMember(boardId, payload.getUsernameOrEmailAddress());
+            AddBoardMemberCommand command = payload.toCommand(boardId);
+            addTriggeredBy(command, request);
+            User member = boardService.addMember(command);
 
             ApiResult apiResult = ApiResult.blank()
                     .add("id", member.getId().value())

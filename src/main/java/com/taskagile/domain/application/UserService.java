@@ -1,6 +1,6 @@
 package com.taskagile.domain.application;
 
-import com.taskagile.domain.application.commands.RegistrationCommand;
+import com.taskagile.domain.application.commands.RegisterCommand;
 import com.taskagile.domain.model.user.RegistrationException;
 
 import com.taskagile.domain.model.user.User;
@@ -25,6 +25,6 @@ public interface UserService extends UserDetailsService {
      *                               1) Username already exists
      *                               2) Email address already exists.
      */
-    void register(RegistrationCommand command) throws RegistrationException;
+    void register(RegisterCommand command) throws RegistrationException;
 
 }

@@ -4,7 +4,7 @@ import com.taskagile.domain.model.card.CardId;
 import lombok.Getter;
 
 @Getter
-public class ChangeCardDescriptionCommand {
+public class ChangeCardDescriptionCommand extends UserCommand {
 
     private final CardId cardId;
     private final String description;

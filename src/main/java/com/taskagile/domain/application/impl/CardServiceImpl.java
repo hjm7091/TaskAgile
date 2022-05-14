@@ -1,12 +1,9 @@
 package com.taskagile.domain.application.impl;
 
 import com.taskagile.domain.application.commands.*;
-import com.taskagile.domain.application.utils.CardService;
+import com.taskagile.domain.application.CardService;
 import com.taskagile.domain.common.event.DomainEventPublisher;
-import com.taskagile.domain.model.activity.Activity;
-import com.taskagile.domain.model.activity.ActivityRepository;
-import com.taskagile.domain.model.activity.ActivityType;
-import com.taskagile.domain.model.activity.CardActivity;
+import com.taskagile.domain.model.activity.*;
 import com.taskagile.domain.model.attachment.Attachment;
 import com.taskagile.domain.model.attachment.AttachmentManagement;
 import com.taskagile.domain.model.attachment.AttachmentRepository;
@@ -20,12 +17,14 @@ import com.taskagile.domain.model.card.events.CardDescriptionChangedEvent;
 import com.taskagile.domain.model.card.events.CardTitleChangedEvent;
 import com.taskagile.domain.model.cardlist.CardList;
 import com.taskagile.domain.model.cardlist.CardListRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.transaction.Transactional;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 @Transactional
 public class CardServiceImpl implements CardService {
@@ -36,20 +35,6 @@ public class CardServiceImpl implements CardService {
     private final AttachmentManagement attachmentManagement;
     private final AttachmentRepository attachmentRepository;
     private final DomainEventPublisher domainEventPublisher;
-
-    public CardServiceImpl(CardRepository cardRepository,
-                           CardListRepository cardListRepository,
-                           ActivityRepository activityRepository,
-                           AttachmentRepository attachmentRepository,
-                           AttachmentManagement attachmentManagement,
-                           DomainEventPublisher domainEventPublisher) {
-        this.cardRepository = cardRepository;
-        this.cardListRepository = cardListRepository;
-        this.activityRepository = activityRepository;
-        this.attachmentManagement = attachmentManagement;
-        this.attachmentRepository = attachmentRepository;
-        this.domainEventPublisher = domainEventPublisher;
-    }
 
     @Override
     public List<Card> findByBoardId(BoardId boardId) {
@@ -78,7 +63,7 @@ public class CardServiceImpl implements CardService {
 
         Card card = Card.create(cardList, command.getUserId(), command.getTitle(), command.getPosition());
         cardRepository.save(card);
-        domainEventPublisher.publish(new CardAddedEvent(this, card));
+        domainEventPublisher.publish(new CardAddedEvent(card, command));
         return card;
     }
 
@@ -92,9 +77,10 @@ public class CardServiceImpl implements CardService {
         Assert.notNull(command, "Parameter `command` must not be null");
 
         Card card = findCard(command.getCardId());
+        String oldTitle = card.getTitle();
         card.changeTitle(command.getTitle());
         cardRepository.save(card);
-        domainEventPublisher.publish(new CardTitleChangedEvent(this, card));
+        domainEventPublisher.publish(new CardTitleChangedEvent(card, oldTitle, command));
     }
 
     @Override
@@ -102,31 +88,29 @@ public class CardServiceImpl implements CardService {
         Assert.notNull(command, "Parameter `command` must not be null");
 
         Card card = findCard(command.getCardId());
+        String oldDescription = card.getDescription();
         card.changeDescription(command.getDescription());
         cardRepository.save(card);
-        domainEventPublisher.publish(new CardDescriptionChangedEvent(this, card));
+        domainEventPublisher.publish(new CardDescriptionChangedEvent(card, oldDescription, command));
     }
 
     @Override
     public Activity addComment(AddCardCommentCommand command) {
         Assert.notNull(command, "Parameter `command` must not be null");
-
         Card card = findCard(command.getCardId());
-        CardActivity cardActivity = CardActivity.create(command.getUserId(), card, ActivityType.ADD_COMMENT);
-        cardActivity.addDetail("comment", command.getComment());
-
-        Activity activity = Activity.from(cardActivity);
-        activityRepository.save(activity);
-        return activity;
+        Activity cardActivity = CardActivities.from(card, command.getUserId(), command.getComment(), command.getIpAddress());
+        activityRepository.save(cardActivity);
+        return cardActivity;
     }
 
     @Override
     public Attachment addAttachment(AddCardAttachmentCommand command) {
         Assert.notNull(command, "Parameter `command` must not be null");
 
+        Card card = findCard(command.getCardId());
         Attachment attachment = attachmentManagement.save(
                 command.getCardId(), command.getFile(), command.getUserId());
-        domainEventPublisher.publish(new CardAttachmentAddedEvent(this, attachment));
+        domainEventPublisher.publish(new CardAttachmentAddedEvent(card, attachment, command));
         return attachment;
     }
 

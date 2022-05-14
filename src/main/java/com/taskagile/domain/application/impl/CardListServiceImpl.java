@@ -8,23 +8,19 @@ import com.taskagile.domain.model.board.BoardId;
 import com.taskagile.domain.model.cardlist.CardList;
 import com.taskagile.domain.model.cardlist.CardListRepository;
 import com.taskagile.domain.model.cardlist.events.CardListAddedEvent;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 @Transactional
 public class CardListServiceImpl implements CardListService {
 
     private final CardListRepository cardListRepository;
     private final DomainEventPublisher domainEventPublisher;
-
-    public CardListServiceImpl(CardListRepository cardListRepository,
-                               DomainEventPublisher domainEventPublisher) {
-        this.cardListRepository = cardListRepository;
-        this.domainEventPublisher = domainEventPublisher;
-    }
 
     @Override
     public List<CardList> findByBoardId(BoardId boardId) {
@@ -37,7 +33,7 @@ public class CardListServiceImpl implements CardListService {
                 command.getUserId(), command.getName(), command.getPosition());
 
         cardListRepository.save(cardList);
-        domainEventPublisher.publish(new CardListAddedEvent(this, cardList));
+        domainEventPublisher.publish(new CardListAddedEvent(cardList, command));
         return cardList;
     }
 

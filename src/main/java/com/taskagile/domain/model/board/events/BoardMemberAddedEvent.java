@@ -1,27 +1,23 @@
 package com.taskagile.domain.model.board.events;
 
-import com.taskagile.domain.common.event.DomainEvent;
+import com.taskagile.domain.common.event.TriggeredBy;
 import com.taskagile.domain.model.board.BoardId;
 import com.taskagile.domain.model.user.User;
+import com.taskagile.domain.model.user.UserId;
+import lombok.Getter;
 
-public class BoardMemberAddedEvent extends DomainEvent {
+@Getter
+public class BoardMemberAddedEvent extends BoardDomainEvent {
 
     private static final long serialVersionUID = -8979992986207557039L;
 
-    private final BoardId boardId;
-    private final User user;
+    private final UserId memberUserId;
+    private final String memberName;
 
-    public BoardMemberAddedEvent(Object source, BoardId boardId, User user) {
-        super(source);
-        this.boardId = boardId;
-        this.user = user;
+    public BoardMemberAddedEvent(BoardId boardId, User addedUser, TriggeredBy triggeredBy) {
+        super(boardId, triggeredBy);
+        this.memberUserId = addedUser.getId();
+        this.memberName = addedUser.getFirstName() + " " + addedUser.getLastName();
     }
 
-    public BoardId getBoardId() {
-        return boardId;
-    }
-
-    public User getUser() {
-        return user;
-    }
 }

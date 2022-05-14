@@ -1,35 +1,19 @@
 package com.taskagile.domain.application.commands;
 
 import com.taskagile.domain.model.board.BoardId;
-import com.taskagile.domain.model.user.UserId;
+import lombok.Getter;
 
-public class AddCardListCommand {
+@Getter
+public class AddCardListCommand extends UserCommand {
 
-    private final UserId userId;
     private final String name;
     private final BoardId boardId;
     private final int position;
 
-    public AddCardListCommand(BoardId boardId, UserId userId, String name, int position) {
+    public AddCardListCommand(BoardId boardId, String name, int position) {
         this.boardId = boardId;
-        this.userId = userId;
         this.name = name;
         this.position = position;
     }
 
-    public BoardId getBoardId() {
-        return boardId;
-    }
-
-    public UserId getUserId() {
-        return userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getPosition() {
-        return position;
-    }
 }

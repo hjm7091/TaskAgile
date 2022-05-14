@@ -1,4 +1,4 @@
-package com.taskagile.domain.application.utils;
+package com.taskagile.domain.application;
 
 import com.taskagile.domain.application.commands.*;
 import com.taskagile.domain.model.activity.Activity;

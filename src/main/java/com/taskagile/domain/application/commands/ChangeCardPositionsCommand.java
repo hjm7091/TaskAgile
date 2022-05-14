@@ -2,13 +2,12 @@ package com.taskagile.domain.application.commands;
 
 import com.taskagile.domain.model.board.BoardId;
 import com.taskagile.domain.model.card.CardPosition;
-import com.taskagile.web.payload.ChangeCardPositionsPayload;
 
 import java.util.List;
 
 import static com.taskagile.web.payload.ChangeCardPositionsPayload.*;
 
-public class ChangeCardPositionsCommand {
+public class ChangeCardPositionsCommand extends UserCommand {
 
     private final BoardId boardId;
     private final List<CardPosition> cardPositions;

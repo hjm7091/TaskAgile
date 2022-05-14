@@ -1,35 +1,19 @@
 package com.taskagile.domain.application.commands;
 
 import com.taskagile.domain.model.team.TeamId;
-import com.taskagile.domain.model.user.UserId;
+import lombok.Getter;
 
-public class CreateBoardCommand {
+@Getter
+public class CreateBoardCommand extends UserCommand {
 
-    private final UserId userId;
     private final String name;
     private final String description;
     private final TeamId teamId;
 
-    public CreateBoardCommand(UserId userId, String name, String description, TeamId teamId) {
-        this.userId = userId;
+    public CreateBoardCommand(String name, String description, TeamId teamId) {
         this.name = name;
         this.description = description;
         this.teamId = teamId;
     }
 
-    public UserId getUserId() {
-        return userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public TeamId getTeamId() {
-        return teamId;
-    }
 }

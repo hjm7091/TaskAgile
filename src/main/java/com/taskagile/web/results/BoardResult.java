@@ -1,11 +1,13 @@
 package com.taskagile.web.results;
 
+import com.taskagile.domain.common.file.FileUrlCreator;
 import com.taskagile.domain.model.board.Board;
 import com.taskagile.domain.model.card.Card;
 import com.taskagile.domain.model.cardlist.CardList;
 import com.taskagile.domain.model.cardlist.CardListId;
 import com.taskagile.domain.model.team.Team;
 import com.taskagile.domain.model.user.User;
+import com.taskagile.utils.ImageUtils;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 
@@ -17,7 +19,8 @@ import java.util.Map;
 public class BoardResult {
 
     public static ResponseEntity<ApiResult> build(Team team, Board board, List<User> members,
-                                                  List<CardList> cardLists, List<Card> cards) {
+                                                  List<CardList> cardLists, List<Card> cards,
+                                                  FileUrlCreator fileUrlCreator) {
         Map<String, Object> boardData = new HashMap<>();
         boardData.put("id", board.getId().value());
         boardData.put("name", board.getName());
@@ -35,7 +38,7 @@ public class BoardResult {
         }
 
         for (CardList cardList: cardLists) {
-            cardListsData.add(new CardListData(cardList, cardsByList.get(cardList.getId())));
+            cardListsData.add(new CardListData(cardList, cardsByList.get(cardList.getId()), fileUrlCreator));
         }
 
         ApiResult result = ApiResult.blank()
@@ -71,13 +74,13 @@ public class BoardResult {
         private final int position;
         private final List<CardData> cards = new ArrayList<>();
 
-        CardListData(CardList cardList, List<Card> cards) {
+        CardListData(CardList cardList, List<Card> cards, FileUrlCreator fileUrlCreator) {
             this.id = cardList.getId().value();
             this.name = cardList.getName();
             this.position = cardList.getPosition();
             if (cards != null) {
                 for (Card card: cards) {
-                    this.cards.add(new CardData(card));
+                    this.cards.add(new CardData(card, fileUrlCreator));
                 }
             }
         }
@@ -88,11 +91,14 @@ public class BoardResult {
         private final long id;
         private final String title;
         private final int position;
+        private final String coverImage;
 
-        CardData(Card card) {
+        CardData(Card card, FileUrlCreator fileUrlCreator) {
             this.id = card.getId().value();
             this.title = card.getTitle();
             this.position = card.getPosition();
+            this.coverImage = card.hasCoverImage() ?
+                    ImageUtils.getThumbnailVersion(fileUrlCreator.url(card.getCoverImage())) : "";
         }
     }
 

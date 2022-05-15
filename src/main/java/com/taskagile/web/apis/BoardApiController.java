@@ -6,6 +6,7 @@ import com.taskagile.domain.application.TeamService;
 import com.taskagile.domain.application.commands.AddBoardMemberCommand;
 import com.taskagile.domain.application.commands.CreateBoardCommand;
 import com.taskagile.domain.application.CardService;
+import com.taskagile.domain.common.file.FileUrlCreator;
 import com.taskagile.domain.model.board.Board;
 import com.taskagile.domain.model.board.BoardId;
 import com.taskagile.domain.model.card.Card;
@@ -19,6 +20,7 @@ import com.taskagile.web.results.ApiResult;
 import com.taskagile.web.results.BoardResult;
 import com.taskagile.web.results.CreateBoardResult;
 import com.taskagile.web.results.Result;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Controller
 public class BoardApiController extends AbstractBaseController {
 
@@ -36,16 +39,7 @@ public class BoardApiController extends AbstractBaseController {
     private final TeamService teamService;
     private final CardListService cardListService;
     private final CardService cardService;
-
-    public BoardApiController(BoardService boardService,
-                              TeamService teamService,
-                              CardListService cardListService,
-                              CardService cardService) {
-        this.boardService = boardService;
-        this.teamService = teamService;
-        this.cardListService = cardListService;
-        this.cardService = cardService;
-    }
+    private final FileUrlCreator fileUrlCreator;
 
     @PostMapping("/api/boards")
     public ResponseEntity<ApiResult> createBoard(@RequestBody CreateBoardPayload payload,
@@ -73,7 +67,7 @@ public class BoardApiController extends AbstractBaseController {
         List<CardList> cardLists = cardListService.findByBoardId(boardId);
         List<Card> cards = cardService.findByBoardId(boardId);
 
-        return BoardResult.build(team, board, members, cardLists, cards);
+        return BoardResult.build(team, board, members, cardLists, cards, fileUrlCreator);
     }
 
     @PostMapping("/api/boards/{boardId}/members")

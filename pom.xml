@@ -25,6 +25,7 @@
 		<im4java.version>1.4.0</im4java.version>
 		<aws-s3.version>1.11.409</aws-s3.version>
 		<javax.interceptor.version>1.2</javax.interceptor.version>
+		<codehaus.version>1.6.0</codehaus.version>
 	</properties>
 
 	<dependencies>
@@ -163,6 +164,70 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<!--
+      	Maven profile for local e2e test
+      	To include this profile, run `mvn clean install -P local-e2e`
+    	-->
+		<profile>
+			<id>local-e2e</id>
+			<build>
+				<plugins>
+					<!-- Plugin for start app in local e2e -->
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>pre local-e2e test</id>
+								<goals>
+									<goal>start</goal>
+								</goals>
+								<configuration>
+									<!-- Set active Spring Profile -->
+									<profiles>
+										<profile>e2e</profile>
+									</profiles>
+								</configuration>
+							</execution>
+							<execution>
+								<id>post local-e2e test</id>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- Plugin for execute local e2e -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>${codehaus.version}</version>
+						<executions>
+							<execution>
+								<id>front-end local-e2e test</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>integration-test</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>test:local-e2e</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+						<configuration>
+							<workingDirectory>${basedir}/front-end</workingDirectory>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -181,30 +246,13 @@
 							<goal>build-info</goal>
 						</goals>
 					</execution>
-					<execution>
-						<id>pre integration test</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<profiles>
-								<profile>e2e</profile>
-							</profiles>
-						</configuration>
-					</execution>
-					<execution>
-						<id>post integration test</id>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
 				</executions>
 			</plugin>
 
 			<plugin>
         		<groupId>org.codehaus.mojo</groupId>
         		<artifactId>exec-maven-plugin</artifactId>
-        		<version>1.6.0</version>
+        		<version>${codehaus.version}</version>
         		<executions>
           			<execution>
             			<id>front-end install</id>
@@ -247,20 +295,6 @@
 							</arguments>
 						</configuration>
           			</execution>
-					<execution>
-						<id>front-end e2e test</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>integration-test</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>test:e2e</argument>
-							</arguments>
-						</configuration>
-					</execution>
         		</executions>
 				<configuration>
 					<workingDirectory>${basedir}/front-end</workingDirectory>
@@ -269,7 +303,6 @@
 
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>copy front-end template</id>
@@ -348,7 +381,6 @@
 
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.1.0</version>
 				<configuration>
 					<filesets>
 						<fileset>
